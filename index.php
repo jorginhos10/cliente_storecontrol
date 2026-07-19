@@ -1,13 +1,12 @@
 <?php
 
 define('ROOT', __DIR__);
-define('BASE_URL', '/tiendas');
+define('BASE_URL', '');
 
 session_start();
 
 // Router simple
 $uri = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-$uri = preg_replace('#^tiendas/?#', '', $uri);
 
 switch ($uri) {
     case '':
