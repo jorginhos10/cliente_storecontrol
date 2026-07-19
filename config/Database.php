@@ -6,8 +6,8 @@ class Database {
     private mysqli $connection;
 
     private string $host     = 'localhost';
-    private string $user     = 'root';
-    private string $password = '';
+    private string $user     = 'jorginho_cliente_storecontrol';
+    private string $password = 'jorginho10.';
     private string $dbname   = 'storecontrol';
 
     private function __construct() {
