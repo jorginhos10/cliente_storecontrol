@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/c/xampp/mysql/bin/mysql.exe --version)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"SHOW DATABASES;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"SHOW TABLES;\" petcontrol)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"CREATE DATABASE IF NOT EXISTS storecontrol CHARACTER SET utf8 COLLATE utf8_general_ci;\")",
+      "Bash(/c/xampp/mysql/bin/mysqldump.exe -u root petcontrol)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root storecontrol)",
+      "Read(//tmp/**)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -e \"SHOW TABLES;\" storecontrol)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root storecontrol -e ' *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root storecontrol -e \"DESCRIBE productos;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root storecontrol -e \"DESCRIBE inventario;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root storecontrol -e \"SELECT DISTINCT categoria FROM productos;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root storecontrol -e \"SELECT * FROM categorias; DESCRIBE productos;\")"
+    ]
+  }
+}
