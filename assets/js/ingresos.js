@@ -71,7 +71,7 @@ function agregarLinea() {
             document.getElementById(`unidad-${idx}`).textContent = 'u.';
             recalcularLinea(idx);
         },
-        'precio_compra',
+        'precio_venta',
         true  // ingresos: permitir seleccionar productos aunque tengan stock 0
     );
 

@@ -269,7 +269,7 @@
                                 <input type="file" class="form-control" name="imagen" id="inp-imagen"
                                        accept="image/jpeg,image/png,image/webp" onchange="previsualizarImagen(this)">
                             </div>
-                            <div class="form-text">JPG, PNG o WEBP, máximo 3MB.</div>
+                            <div class="form-text">JPG, PNG o WEBP, máximo 20MB. Se guarda comprimida automáticamente.</div>
                         </div>
 
                         <div class="col-md-6">

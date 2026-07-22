@@ -3,16 +3,23 @@
 require_once ROOT . '/app/models/ProductoModel.php';
 require_once ROOT . '/app/models/VeterinariaModel.php';
 require_once ROOT . '/app/models/IngresoModel.php';
+require_once ROOT . '/app/models/CuentaModel.php';
 
 class AlmacenController {
 
+    private const IMAGEN_MAX_SUBIDA = 20 * 1024 * 1024; // 20MB permitidos en la subida
+    private const IMAGEN_MAX_FINAL  = 2  * 1024 * 1024;  // la miniatura guardada no debe superar 2MB
+    private const IMAGEN_MAX_LADO   = 1200;              // lado máximo en píxeles de la miniatura
+
     private ProductoModel    $model;
     private VeterinariaModel $vetModel;
+    private CuentaModel      $cuentaModel;
 
     public function __construct() {
         $this->requiereAutenticacion();
-        $this->model    = new ProductoModel();
-        $this->vetModel = new VeterinariaModel();
+        $this->model       = new ProductoModel();
+        $this->vetModel    = new VeterinariaModel();
+        $this->cuentaModel = new CuentaModel();
     }
 
     public function index(): void {
@@ -59,9 +66,9 @@ class AlmacenController {
         $id        = (int)($_GET['id'] ?? 0);
         $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
 
-        $imagen = $this->procesarImagen($_FILES['imagen'] ?? null);
+        $imagen = $this->procesarImagen($_FILES['imagen'] ?? null, $cuenta_id);
         if ($imagen === false) {
-            $_SESSION['flash_error'] = 'La imagen debe ser JPG, PNG o WEBP y pesar menos de 3MB.';
+            $_SESSION['flash_error'] = 'La imagen debe ser JPG, PNG o WEBP y pesar menos de 20MB.';
             $this->redirect('almacen');
         }
 
@@ -82,9 +89,11 @@ class AlmacenController {
         $this->redirect('almacen');
     }
 
-    // Sube la foto del producto a assets/img/productos; retorna el nombre de archivo,
-    // null si no se envió ninguna, o false si la subida no es válida.
-    private function procesarImagen(?array $file): string|false|null {
+    // Sube la foto del producto, la comprime a una miniatura liviana y la guarda en
+    // assets/img/productos/{negocio}/. Retorna la ruta relativa guardada en BD
+    // (ej. "mi_negocio/prod_abc123.jpg"), null si no se envió ninguna, o false si
+    // la subida no es válida.
+    private function procesarImagen(?array $file, int $cuenta_id): string|false|null {
         if (empty($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
             return null;
         }
@@ -95,14 +104,89 @@ class AlmacenController {
         $permitidos = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
         $mime = mime_content_type($file['tmp_name']);
 
-        if (!isset($permitidos[$mime]) || $file['size'] > 3 * 1024 * 1024) {
+        if (!isset($permitidos[$mime]) || $file['size'] > self::IMAGEN_MAX_SUBIDA) {
             return false;
         }
 
-        $nombre  = uniqid('prod_', true) . '.' . $permitidos[$mime];
-        $destino = ROOT . '/assets/img/productos/' . $nombre;
+        $carpeta = $this->carpetaNegocio($cuenta_id);
+        $destinoDir = ROOT . '/assets/img/productos/' . $carpeta;
+        if (!is_dir($destinoDir) && !mkdir($destinoDir, 0775, true) && !is_dir($destinoDir)) {
+            return false;
+        }
 
-        return move_uploaded_file($file['tmp_name'], $destino) ? $nombre : false;
+        // Siempre se guarda como .jpg: permite comprimir de forma confiable a <2MB
+        // sin depender del formato original (PNG/WEBP no siempre bajan de tamaño).
+        $nombre  = uniqid('prod_', true) . '.jpg';
+        $destino = $destinoDir . '/' . $nombre;
+
+        if (!$this->generarMiniatura($file['tmp_name'], $mime, $destino)) {
+            return false;
+        }
+
+        return $carpeta . '/' . $nombre;
+    }
+
+    // Nombre de carpeta seguro para el sistema de archivos, derivado del nombre
+    // del negocio (cuentas.nombre), para separar las imágenes de cada cuenta.
+    private function carpetaNegocio(int $cuenta_id): string {
+        $cuenta  = $this->cuentaModel->findById($cuenta_id);
+        $nombre  = $cuenta['nombre'] ?? 'negocio';
+        $ascii   = iconv('UTF-8', 'ASCII//TRANSLIT', $nombre) ?: $nombre;
+        $slug    = strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '_', $ascii), '_'));
+        return $slug !== '' ? $slug : 'negocio_' . $cuenta_id;
+    }
+
+    // Redimensiona (si excede IMAGEN_MAX_LADO) y comprime la imagen como JPEG,
+    // reduciendo calidad y luego dimensiones hasta que pese menos de IMAGEN_MAX_FINAL.
+    private function generarMiniatura(string $origen, string $mime, string $destino): bool {
+        if (!function_exists('imagecreatetruecolor')) {
+            // Sin GD disponible: se copia el original tal cual (mejor que fallar).
+            return copy($origen, $destino);
+        }
+
+        $img = match ($mime) {
+            'image/jpeg' => @imagecreatefromjpeg($origen),
+            'image/png'  => @imagecreatefrompng($origen),
+            'image/webp' => @imagecreatefromwebp($origen),
+            default      => false,
+        };
+        if (!$img) {
+            return copy($origen, $destino);
+        }
+
+        $img = $this->redimensionar($img, self::IMAGEN_MAX_LADO);
+
+        $calidad = 85;
+        do {
+            imagejpeg($img, $destino, $calidad);
+            $calidad -= 15;
+        } while (filesize($destino) > self::IMAGEN_MAX_FINAL && $calidad >= 25);
+
+        // Si aún supera el límite, reducir dimensiones progresivamente.
+        while (filesize($destino) > self::IMAGEN_MAX_FINAL && max(imagesx($img), imagesy($img)) > 300) {
+            $img = $this->redimensionar($img, (int)(max(imagesx($img), imagesy($img)) * 0.8));
+            imagejpeg($img, $destino, 60);
+        }
+
+        imagedestroy($img);
+        return true;
+    }
+
+    // Redimensiona (si excede $maxLado) aplanando transparencia sobre blanco.
+    private function redimensionar(\GdImage $img, int $maxLado): \GdImage {
+        $ancho = imagesx($img);
+        $alto  = imagesy($img);
+        $ratio = max($ancho, $alto) > $maxLado ? $maxLado / max($ancho, $alto) : 1;
+
+        $nAncho = max(1, (int)round($ancho * $ratio));
+        $nAlto  = max(1, (int)round($alto  * $ratio));
+
+        $plano = imagecreatetruecolor($nAncho, $nAlto);
+        imagefill($plano, 0, 0, imagecolorallocate($plano, 255, 255, 255));
+        imagecopyresampled($plano, $img, 0, 0, 0, 0, $nAncho, $nAlto, $ancho, $alto);
+        imagedestroy($img);
+
+        return $plano;
     }
 
     public function transferir(): void {

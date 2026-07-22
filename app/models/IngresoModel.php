@@ -131,7 +131,7 @@ class IngresoModel {
     public function getProductos(int $cuenta_id, int $veterinaria_id = 0): array {
         if ($veterinaria_id > 0) {
             $stmt = $this->db->prepare(
-                'SELECT p.id, p.nombre, p.codigo, p.unidad, p.precio_compra,
+                'SELECT p.id, p.nombre, p.codigo, p.unidad, p.precio_compra, p.precio_venta,
                         COALESCE(inv.stock, 0) AS stock
                  FROM productos p
                  LEFT JOIN inventario inv ON inv.producto_id = p.id
@@ -142,7 +142,7 @@ class IngresoModel {
             $stmt->bind_param('ii', $veterinaria_id, $cuenta_id);
         } else {
             $stmt = $this->db->prepare(
-                'SELECT id, nombre, codigo, unidad, precio_compra, stock
+                'SELECT id, nombre, codigo, unidad, precio_compra, precio_venta, stock
                  FROM productos WHERE activo = 1 AND cuenta_id = ? ORDER BY nombre ASC'
             );
             $stmt->bind_param('i', $cuenta_id);

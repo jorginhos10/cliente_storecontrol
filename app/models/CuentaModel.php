@@ -47,4 +47,13 @@ class CuentaModel {
             return false;
         }
     }
+
+    public function findById(int $id): ?array {
+        $stmt = $this->db->prepare('SELECT * FROM cuentas WHERE id = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $row ?: null;
+    }
 }
