@@ -263,20 +263,28 @@ class VentaModel {
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function getVeterinarias(): array {
-        $result = $this->db->query('SELECT id, nombre FROM veterinarias WHERE activo = 1 ORDER BY nombre ASC');
+    public function getVeterinarias(int $cuenta_id): array {
+        $stmt = $this->db->prepare('SELECT id, nombre FROM veterinarias WHERE activo = 1 AND cuenta_id = ? ORDER BY nombre ASC');
+        $stmt->bind_param('i', $cuenta_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function getClientes(): array {
-        $result = $this->db->query(
+    public function getClientes(int $cuenta_id): array {
+        $stmt = $this->db->prepare(
             "SELECT id, CONCAT(nombre, ' ', apellido) AS nombre_completo, telefono
-             FROM clientes WHERE activo = 1 ORDER BY apellido ASC, nombre ASC"
+             FROM clientes WHERE activo = 1 AND cuenta_id = ? ORDER BY apellido ASC, nombre ASC"
         );
+        $stmt->bind_param('i', $cuenta_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function getProductos(int $veterinaria_id = 0): array {
+    public function getProductos(int $cuenta_id, int $veterinaria_id = 0): array {
         if ($veterinaria_id > 0) {
             $stmt = $this->db->prepare(
                 'SELECT p.id, p.nombre, p.codigo, p.codigo_barras, p.unidad, p.precio_venta, c.nombre AS categoria,
@@ -285,21 +293,22 @@ class VentaModel {
                  LEFT JOIN categorias c ON c.id = p.categoria_id
                  LEFT JOIN inventario inv ON inv.producto_id = p.id
                      AND inv.veterinaria_id = ?
-                 WHERE p.activo = 1
+                 WHERE p.activo = 1 AND p.cuenta_id = ?
                  ORDER BY p.nombre ASC'
             );
-            $stmt->bind_param('i', $veterinaria_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $stmt->close();
+            $stmt->bind_param('ii', $veterinaria_id, $cuenta_id);
         } else {
-            $result = $this->db->query(
+            $stmt = $this->db->prepare(
                 'SELECT p.id, p.nombre, p.codigo, p.codigo_barras, p.unidad, p.precio_venta, c.nombre AS categoria, p.stock
                  FROM productos p
                  LEFT JOIN categorias c ON c.id = p.categoria_id
-                 WHERE p.activo = 1 ORDER BY p.nombre ASC'
+                 WHERE p.activo = 1 AND p.cuenta_id = ? ORDER BY p.nombre ASC'
             );
+            $stmt->bind_param('i', $cuenta_id);
         }
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 

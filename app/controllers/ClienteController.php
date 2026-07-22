@@ -15,7 +15,8 @@ class ClienteController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -26,8 +27,8 @@ class ClienteController {
             'activePage'     => 'clientes',
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
-            'clientes'       => $this->model->getAll(),
-            'totales'        => $this->model->getTotales(),
+            'clientes'       => $this->model->getAll($cuenta_id),
+            'totales'        => $this->model->getTotales($cuenta_id),
             'usuario'    => [
                 'nombre' => $_SESSION['usuario_nombre'],
                 'email'  => $_SESSION['usuario_email'],
@@ -53,15 +54,16 @@ class ClienteController {
             $this->redirect('clientes');
         }
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id        = (int)($_POST['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
 
         if ($id > 0) {
-            $ok = $this->model->actualizar($id, $datos);
+            $ok = $this->model->actualizar($id, $datos, $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Cliente actualizado correctamente.'
                 : 'Error al actualizar el cliente.';
         } else {
-            $ok = $this->model->crear($datos);
+            $ok = $this->model->crear($datos, $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Cliente registrado correctamente.'
                 : 'Error al registrar el cliente.';
@@ -71,9 +73,10 @@ class ClienteController {
     }
 
     public function eliminar(): void {
-        $id = (int)($_GET['id'] ?? 0);
+        $id        = (int)($_GET['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
         if ($id > 0) {
-            $this->model->eliminar($id);
+            $this->model->eliminar($id, $cuenta_id);
             $_SESSION['flash_success'] = 'Cliente eliminado.';
         }
         $this->redirect('clientes');

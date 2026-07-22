@@ -20,6 +20,11 @@ switch ($uri) {
         (new AuthController())->logout();
         break;
 
+    case 'registro':
+        require_once ROOT . '/app/controllers/AuthController.php';
+        (new AuthController())->registro();
+        break;
+
     case 'dashboard':
         require_once ROOT . '/app/controllers/DashboardController.php';
         (new DashboardController())->index();

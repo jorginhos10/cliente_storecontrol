@@ -12,7 +12,8 @@ class ConfiguracionController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -38,7 +39,8 @@ class ConfiguracionController {
     }
 
     public function sucursales(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         foreach ($veterinarias as &$v) {
             $v['tiene_datos'] = $this->vetModel->tieneDatos((int)$v['id']);
         }
@@ -76,14 +78,15 @@ class ConfiguracionController {
             $this->redirect('configuracion');
         }
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id        = (int)($_POST['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
 
         if ($id > 0) {
-            $ok = $this->vetModel->actualizar($id, $datos);
+            $ok = $this->vetModel->actualizar($id, $datos, $cuenta_id);
             $_SESSION['flash_success'] = $ok ? 'Veterinaria actualizada correctamente.' : 'Error al actualizar.';
             $_SESSION['flash_tab']     = $id;
         } else {
-            $nuevoId = $this->vetModel->crear($datos);
+            $nuevoId = $this->vetModel->crear($datos, $cuenta_id);
             $_SESSION['flash_success'] = $nuevoId ? 'Veterinaria agregada correctamente.' : 'Error al agregar.';
             $_SESSION['flash_tab']     = $nuevoId ?: null;
         }
@@ -92,12 +95,13 @@ class ConfiguracionController {
     }
 
     public function eliminarVeterinaria(): void {
-        $id = (int)($_GET['id'] ?? 0);
+        $id        = (int)($_GET['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
         if ($id > 0) {
             if ($this->vetModel->tieneDatos($id)) {
                 $_SESSION['flash_error'] = 'No se puede eliminar: la sucursal tiene ventas, ingresos, stock o usuarios asignados.';
             } else {
-                $this->vetModel->eliminar($id);
+                $this->vetModel->eliminar($id, $cuenta_id);
                 $_SESSION['flash_success'] = 'Sucursal eliminada correctamente.';
             }
         }

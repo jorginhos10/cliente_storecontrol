@@ -15,7 +15,7 @@ class DevolucionController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $veterinarias   = $this->vetModel->getAll((int)($_SESSION['cuenta_id'] ?? 0));
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -80,7 +80,7 @@ class DevolucionController {
             }
         }
 
-        if ($venta_id <= 0 || $veterinaria_id <= 0) {
+        if ($venta_id <= 0 || $veterinaria_id <= 0 || !$this->vetModel->findById($veterinaria_id, (int)($_SESSION['cuenta_id'] ?? 0))) {
             $_SESSION['flash_error'] = 'Datos inválidos para registrar la devolución.';
             $this->redirect('devoluciones');
         }

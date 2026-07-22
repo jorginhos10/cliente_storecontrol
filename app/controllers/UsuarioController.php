@@ -16,7 +16,8 @@ class UsuarioController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -27,8 +28,8 @@ class UsuarioController {
             'activePage'     => 'usuarios',
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
-            'usuarios'       => $this->model->getAll(),
-            'totales'        => $this->model->getTotales(),
+            'usuarios'       => $this->model->getAll($cuenta_id),
+            'totales'        => $this->model->getTotales($cuenta_id),
             'usuario'        => [
                 'nombre' => $_SESSION['usuario_nombre'],
                 'email'  => $_SESSION['usuario_email'],
@@ -54,6 +55,7 @@ class UsuarioController {
         $rol        = $_POST['rol'] ?? 'recepcion';
         $pass       = $_POST['password'] ?? '';
         $sucursal_id = (int)($_POST['sucursal_id'] ?? 0);
+        $cuenta_id  = (int)($_SESSION['cuenta_id'] ?? 0);
 
         if (empty($nombre) || empty($email)) {
             $_SESSION['flash_error'] = 'El nombre y el correo son obligatorios.';
@@ -69,13 +71,18 @@ class UsuarioController {
             $rol = 'recepcion';
         }
 
+        if ($sucursal_id > 0 && !$this->vetModel->findById($sucursal_id, $cuenta_id)) {
+            $_SESSION['flash_error'] = 'La sucursal seleccionada no es válida.';
+            $this->redirect('usuarios');
+        }
+
         if ($this->model->emailExiste($email, $id)) {
             $_SESSION['flash_error'] = 'Ya existe un usuario con ese correo.';
             $this->redirect('usuarios');
         }
 
         if ($id > 0) {
-            $ok = $this->model->actualizar($id, compact('nombre', 'email', 'rol', 'sucursal_id'));
+            $ok = $this->model->actualizar($id, compact('nombre', 'email', 'rol', 'sucursal_id'), $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Usuario actualizado correctamente.'
                 : 'Error al actualizar el usuario.';
@@ -85,7 +92,7 @@ class UsuarioController {
                 $this->redirect('usuarios');
             }
             $ok = $this->model->crear(['nombre' => $nombre, 'email' => $email, 'rol' => $rol,
-                                       'password' => $pass, 'sucursal_id' => $sucursal_id]);
+                                       'password' => $pass, 'sucursal_id' => $sucursal_id], $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Usuario creado correctamente.'
                 : 'Error al crear el usuario.';
@@ -99,15 +106,16 @@ class UsuarioController {
             $this->redirect('usuarios');
         }
 
-        $id   = (int)($_POST['id'] ?? 0);
-        $pass = $_POST['password'] ?? '';
+        $id        = (int)($_POST['id'] ?? 0);
+        $pass      = $_POST['password'] ?? '';
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
 
         if ($id <= 0 || strlen($pass) < 6) {
             $_SESSION['flash_error'] = 'La contraseña debe tener al menos 6 caracteres.';
             $this->redirect('usuarios');
         }
 
-        $ok = $this->model->cambiarPassword($id, $pass);
+        $ok = $this->model->cambiarPassword($id, $pass, $cuenta_id);
         $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
             ? 'Contraseña actualizada correctamente.'
             : 'Error al actualizar la contraseña.';
@@ -118,9 +126,10 @@ class UsuarioController {
     public function toggle(): void {
         $id         = (int)($_GET['id'] ?? 0);
         $sesionId   = (int)($_SESSION['usuario_id'] ?? 0);
+        $cuenta_id  = (int)($_SESSION['cuenta_id'] ?? 0);
 
         if ($id > 0 && $id !== $sesionId) {
-            $this->model->toggleActivo($id);
+            $this->model->toggleActivo($id, $cuenta_id);
         }
         $this->redirect('usuarios');
     }

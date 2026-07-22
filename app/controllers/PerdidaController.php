@@ -12,7 +12,8 @@ class PerdidaController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->model->getVeterinarias();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->model->getVeterinarias($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
 
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
@@ -24,7 +25,7 @@ class PerdidaController {
             'activePage'     => 'perdidas',
             'perdidas'       => $this->model->getAll($veterinaria_id),
             'totales'        => $this->model->getTotales($veterinaria_id),
-            'productos'      => $this->model->getProductos($veterinaria_id),
+            'productos'      => $this->model->getProductos($cuenta_id, $veterinaria_id),
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
             'motivos'        => PerdidaModel::MOTIVOS,
@@ -44,10 +45,15 @@ class PerdidaController {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { $this->redirect('perdidas'); }
 
         $veterinaria_id = (int)($_POST['veterinaria_id'] ?? 0);
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
         $vetQuery       = $veterinaria_id > 0 ? '?vet=' . $veterinaria_id : '';
         $lineas         = $this->extraerLineas($_POST);
 
-        if ($veterinaria_id <= 0) {
+        $vetValida = false;
+        foreach ($this->model->getVeterinarias($cuenta_id) as $v) {
+            if ((int)$v['id'] === $veterinaria_id) { $vetValida = true; break; }
+        }
+        if ($veterinaria_id <= 0 || !$vetValida) {
             $_SESSION['flash_error'] = 'Debes seleccionar una veterinaria.';
             $this->redirect('perdidas' . $vetQuery);
         }
@@ -99,7 +105,7 @@ class PerdidaController {
             'total'       => $lineas['total'],
         ];
 
-        $vetActual = (int)($this->model->getVeterinarias()[0]['id'] ?? 0);
+        $vetActual = (int)($this->model->getVeterinarias((int)($_SESSION['cuenta_id'] ?? 0))[0]['id'] ?? 0);
         $errores   = $this->model->validarStock($lineas['items'], $vet ?: $vetActual, $id);
         if (!empty($errores)) {
             $_SESSION['flash_error'] = 'Stock insuficiente: ' . implode(' / ', $errores);
@@ -150,7 +156,7 @@ class PerdidaController {
     }
 
     private function resolverParams(): array {
-        $vets   = $this->model->getVeterinarias();
+        $vets   = $this->model->getVeterinarias((int)($_SESSION['cuenta_id'] ?? 0));
         $vetId  = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($vetId === 0 && !empty($vets)) $vetId = (int)$vets[0]['id'];
         $nombre = '';

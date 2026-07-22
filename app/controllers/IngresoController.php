@@ -13,7 +13,8 @@ class IngresoController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->model->getVeterinarias();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->model->getVeterinarias($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
 
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
@@ -25,8 +26,8 @@ class IngresoController {
             'activePage'     => 'ingresos',
             'ingresos'       => $this->model->getAll($veterinaria_id),
             'totales'        => $this->model->getTotales($veterinaria_id),
-            'productos'      => $this->model->getProductos($veterinaria_id),
-            'proveedores'    => (new ProveedorModel())->getAll(),
+            'productos'      => $this->model->getProductos($cuenta_id, $veterinaria_id),
+            'proveedores'    => (new ProveedorModel())->getAll($cuenta_id),
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
             'usuario'        => [
@@ -48,6 +49,7 @@ class IngresoController {
         }
 
         $veterinaria_id = (int)($_POST['veterinaria_id'] ?? 0);
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
         $vetQuery       = $veterinaria_id > 0 ? '?vet=' . $veterinaria_id : '';
 
         // Recoger líneas de productos
@@ -73,7 +75,11 @@ class IngresoController {
             }
         }
 
-        if ($veterinaria_id <= 0) {
+        $vetValida = false;
+        foreach ($this->model->getVeterinarias($cuenta_id) as $v) {
+            if ((int)$v['id'] === $veterinaria_id) { $vetValida = true; break; }
+        }
+        if ($veterinaria_id <= 0 || !$vetValida) {
             $_SESSION['flash_error'] = 'Debes seleccionar una veterinaria.';
             $this->redirect('ingresos' . $vetQuery);
         }
@@ -173,7 +179,7 @@ class IngresoController {
     }
 
     private function resolverParams(): array {
-        $vets  = $this->model->getVeterinarias();
+        $vets  = $this->model->getVeterinarias((int)($_SESSION['cuenta_id'] ?? 0));
         $vetId = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($vetId === 0 && !empty($vets)) $vetId = (int)$vets[0]['id'];
         $nombre = '';

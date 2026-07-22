@@ -21,7 +21,8 @@ class DashboardController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -34,8 +35,8 @@ class DashboardController {
             'veterinaria_id'  => $veterinaria_id,
             'ventasTotales'   => $this->ventaModel->getTotales($veterinaria_id),
             'ventasHoy'       => $this->ventaModel->getVentasHoy($veterinaria_id, 50),
-            'clientesTotales' => $this->clienteModel->getTotales(),
-            'productosTotales' => $this->productoModel->getTotales($veterinaria_id),
+            'clientesTotales' => $this->clienteModel->getTotales($cuenta_id),
+            'productosTotales' => $this->productoModel->getTotales($cuenta_id, $veterinaria_id),
             'usuario' => [
                 'nombre' => $_SESSION['usuario_nombre'],
                 'email'  => $_SESSION['usuario_email'],

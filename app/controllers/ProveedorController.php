@@ -15,7 +15,8 @@ class ProveedorController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -26,8 +27,8 @@ class ProveedorController {
             'activePage'     => 'proveedores',
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
-            'proveedores'    => $this->model->getAll(),
-            'totales'        => $this->model->getTotales(),
+            'proveedores'    => $this->model->getAll($cuenta_id),
+            'totales'        => $this->model->getTotales($cuenta_id),
             'usuario'        => [
                 'nombre' => $_SESSION['usuario_nombre'],
                 'email'  => $_SESSION['usuario_email'],
@@ -64,14 +65,15 @@ class ProveedorController {
             $this->redirect('proveedores');
         }
 
-        $id = (int)($_POST['id'] ?? 0);
+        $id        = (int)($_POST['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
         if ($id > 0) {
-            $ok = $this->model->actualizar($id, $d);
+            $ok = $this->model->actualizar($id, $d, $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Proveedor actualizado correctamente.'
                 : 'Error al actualizar el proveedor.';
         } else {
-            $ok = $this->model->crear($d);
+            $ok = $this->model->crear($d, $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Proveedor registrado correctamente.'
                 : 'Error al registrar el proveedor.';
@@ -81,8 +83,9 @@ class ProveedorController {
     }
 
     public function toggle(): void {
-        $id = (int)($_GET['id'] ?? 0);
-        if ($id > 0) $this->model->toggleActivo($id);
+        $id        = (int)($_GET['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
+        if ($id > 0) $this->model->toggleActivo($id, $cuenta_id);
         $this->redirect('proveedores');
     }
 

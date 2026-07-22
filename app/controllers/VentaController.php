@@ -12,7 +12,8 @@ class VentaController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->model->getVeterinarias();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->model->getVeterinarias($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
 
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
@@ -24,8 +25,8 @@ class VentaController {
             'activePage'     => 'ventas',
             'ventas'         => $this->model->getAll($veterinaria_id),
             'totales'        => $this->model->getTotales($veterinaria_id),
-            'productos'      => $this->model->getProductos($veterinaria_id),
-            'clientes'       => $this->model->getClientes(),
+            'productos'      => $this->model->getProductos($cuenta_id, $veterinaria_id),
+            'clientes'       => $this->model->getClientes($cuenta_id),
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
             'usuario'        => [
@@ -46,10 +47,15 @@ class VentaController {
         }
 
         $veterinaria_id = (int)($_POST['veterinaria_id'] ?? 0);
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
         $vetQuery       = $veterinaria_id > 0 ? '?vet=' . $veterinaria_id : '';
         $lineas         = $this->extraerLineas($_POST);
 
-        if ($veterinaria_id <= 0) {
+        $vetValida = false;
+        foreach ($this->model->getVeterinarias($cuenta_id) as $v) {
+            if ((int)$v['id'] === $veterinaria_id) { $vetValida = true; break; }
+        }
+        if ($veterinaria_id <= 0 || !$vetValida) {
             $_SESSION['flash_error'] = 'Selecciona una veterinaria.';
             $this->redirect('ventas' . $vetQuery);
         }
@@ -88,7 +94,8 @@ class VentaController {
     }
 
     public function reporteVentas(): void {
-        $veterinarias   = $this->model->getVeterinarias();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->model->getVeterinarias($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -114,8 +121,8 @@ class VentaController {
             'resumen'        => $this->model->getResumenReporte($veterinaria_id, $desde, $hasta),
             'top_productos'  => $this->model->getTopProductos($veterinaria_id, $desde, $hasta),
             'top_vendedores' => $this->model->getTopVendedores($veterinaria_id, $desde, $hasta),
-            'productos'      => $this->model->getProductos($veterinaria_id),
-            'clientes'       => $this->model->getClientes(),
+            'productos'      => $this->model->getProductos($cuenta_id, $veterinaria_id),
+            'clientes'       => $this->model->getClientes($cuenta_id),
             'usuario'        => [
                 'nombre' => $_SESSION['usuario_nombre'],
                 'email'  => $_SESSION['usuario_email'],
@@ -126,7 +133,7 @@ class VentaController {
     }
 
     private function resolverReporteParams(): array {
-        $vets = $this->model->getVeterinarias();
+        $vets = $this->model->getVeterinarias((int)($_SESSION['cuenta_id'] ?? 0));
         $vet_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($vet_id === 0 && !empty($vets)) {
             $vet_id = (int)$vets[0]['id'];
@@ -148,7 +155,7 @@ class VentaController {
         [$veterinarias, $veterinaria_id, $sucursal_nombre, $desde, $hasta] = $this->resolverReporteParams();
         $producto_id   = (int)($_GET['producto_id'] ?? 0);
         $producto_nombre = '';
-        $todosProductos = $this->model->getProductos($veterinaria_id);
+        $todosProductos = $this->model->getProductos((int)($_SESSION['cuenta_id'] ?? 0), $veterinaria_id);
         if ($producto_id > 0) {
             foreach ($todosProductos as $pv) {
                 if ((int)$pv['id'] === $producto_id) { $producto_nombre = $pv['nombre']; break; }
@@ -180,7 +187,7 @@ class VentaController {
         [, $veterinaria_id, $sucursal_nombre, $desde, $hasta] = $this->resolverReporteParams();
         $producto_id   = (int)($_GET['producto_id'] ?? 0);
         $producto_nombre = '';
-        $todosProductos = $this->model->getProductos($veterinaria_id);
+        $todosProductos = $this->model->getProductos((int)($_SESSION['cuenta_id'] ?? 0), $veterinaria_id);
         foreach ($todosProductos as $pv) {
             if ((int)$pv['id'] === $producto_id) { $producto_nombre = $pv['nombre']; break; }
         }
@@ -200,7 +207,7 @@ class VentaController {
     }
 
     public function imprimirReporte(): void {
-        $veterinarias   = $this->model->getVeterinarias();
+        $veterinarias   = $this->model->getVeterinarias((int)($_SESSION['cuenta_id'] ?? 0));
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -234,7 +241,7 @@ class VentaController {
     }
 
     public function historial(): void {
-        $veterinarias   = $this->model->getVeterinarias();
+        $veterinarias   = $this->model->getVeterinarias((int)($_SESSION['cuenta_id'] ?? 0));
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
 
         if ($veterinaria_id === 0 && !empty($veterinarias)) {

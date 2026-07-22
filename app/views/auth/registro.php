@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StoreControl &mdash; Iniciar Sesión</title>
+    <title>StoreControl &mdash; Crear cuenta</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="<?= BASE_URL ?>/assets/css/style.css" rel="stylesheet">
@@ -19,9 +19,9 @@
                 <i class="bi bi-shop"></i>
             </div>
             <h1 class="brand-name">StoreControl</h1>
-            <p class="brand-desc">Sistema de punto de venta integral para la gestión de tu tienda.</p>
+            <p class="brand-desc">Crea tu cuenta y arranca tu propio negocio en minutos.</p>
             <ul class="feature-list">
-                <li><i class="bi bi-check2-circle"></i> Registro rápido de ventas</li>
+                <li><i class="bi bi-check2-circle"></i> Tu cuenta, tus comercios y tus datos, independientes</li>
                 <li><i class="bi bi-check2-circle"></i> Control de inventario y almacén</li>
                 <li><i class="bi bi-check2-circle"></i> Gestión de clientes y proveedores</li>
                 <li><i class="bi bi-check2-circle"></i> Facturación y reportes</li>
@@ -47,8 +47,8 @@
                 <h2 class="mt-2 fw-bold" style="color: var(--primary);">StoreControl</h2>
             </div>
 
-            <h3 class="login-title">Bienvenido de vuelta</h3>
-            <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+            <h3 class="login-title">Crea tu cuenta</h3>
+            <p class="login-subtitle">Registra tu negocio para empezar a usar StoreControl</p>
 
             <!-- Alerta de error -->
             <?php if (!empty($error)): ?>
@@ -59,7 +59,39 @@
             <?php endif; ?>
 
             <!-- Formulario -->
-            <form method="POST" action="<?= BASE_URL ?>/" id="loginForm" novalidate>
+            <form method="POST" action="<?= BASE_URL ?>/registro" id="registroForm" novalidate>
+
+                <div class="mb-3">
+                    <label for="negocio" class="form-label fw-semibold">Nombre del negocio</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-shop"></i></span>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="negocio"
+                            name="negocio"
+                            placeholder="Mi Negocio"
+                            value="<?= htmlspecialchars($negocio) ?>"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nombre" class="form-label fw-semibold">Tu nombre completo</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="nombre"
+                            name="nombre"
+                            placeholder="Nombre y apellido"
+                            value="<?= htmlspecialchars($nombre) ?>"
+                            required
+                        >
+                    </div>
+                </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label fw-semibold">Correo electrónico</label>
@@ -67,7 +99,7 @@
                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                         <input
                             type="email"
-                            class="form-control <?= !empty($error) ? 'is-invalid' : '' ?>"
+                            class="form-control"
                             id="email"
                             name="email"
                             placeholder="correo@ejemplo.com"
@@ -87,56 +119,41 @@
                             class="form-control"
                             id="password"
                             name="password"
-                            placeholder="Tu contraseña"
-                            autocomplete="current-password"
+                            placeholder="Mínimo 6 caracteres"
+                            autocomplete="new-password"
+                            minlength="6"
                             required
                         >
-                        <button class="btn btn-outline-secondary" type="button" id="togglePassword" tabindex="-1" title="Mostrar/ocultar contraseña">
-                            <i class="bi bi-eye" id="toggleIcon"></i>
-                        </button>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
-                        <label class="form-check-label text-muted" for="remember">Recordarme</label>
+                <div class="mb-4">
+                    <label for="password2" class="form-label fw-semibold">Confirmar contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="password2"
+                            name="password2"
+                            placeholder="Repite tu contraseña"
+                            autocomplete="new-password"
+                            minlength="6"
+                            required
+                        >
                     </div>
-                    <a href="#" class="link-primary text-decoration-none small">¿Olvidaste tu contraseña?</a>
                 </div>
 
-                <button type="submit" class="btn btn-primary-custom w-100" id="btnLogin">
-                    <span class="btn-text"><i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión</span>
-                    <span class="btn-loading d-none">
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>Ingresando...
-                    </span>
+                <button type="submit" class="btn btn-primary-custom w-100" id="btnRegistro">
+                    <i class="bi bi-person-plus me-2"></i>Crear cuenta
                 </button>
 
             </form>
 
             <p class="text-center text-muted mt-3 mb-0">
-                ¿No tienes cuenta?
-                <a href="<?= BASE_URL ?>/registro" class="link-primary text-decoration-none fw-semibold">Regístrate</a>
+                ¿Ya tienes cuenta?
+                <a href="<?= BASE_URL ?>/login" class="link-primary text-decoration-none fw-semibold">Inicia sesión</a>
             </p>
-
-            <!-- Credenciales de prueba -->
-            <div class="demo-section mt-4">
-                <p class="text-center text-muted small mb-2">Usuarios de prueba</p>
-                <div class="demo-btns">
-                    <button class="demo-btn" onclick="fillDemo('admin@storecontrol.com')" title="Admin">
-                        <i class="bi bi-shield-check"></i> Admin
-                    </button>
-                    <button class="demo-btn" onclick="fillDemo('veterinario@storecontrol.com')" title="Veterinario">
-                        <i class="bi bi-clipboard2-pulse"></i> Veterinario
-                    </button>
-                    <button class="demo-btn" onclick="fillDemo('recepcion@storecontrol.com')" title="Recepción">
-                        <i class="bi bi-person-badge"></i> Recepción
-                    </button>
-                </div>
-                <p class="text-center text-muted mt-1" style="font-size: .75rem;">
-                    Contraseña: <code>password</code>
-                </p>
-            </div>
 
             <p class="text-center text-muted mt-4 mb-0" style="font-size: .75rem;">
                 &copy; <?= date('Y') ?> StoreControl. Todos los derechos reservados.
@@ -148,6 +165,5 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= BASE_URL ?>/assets/js/app.js"></script>
 </body>
 </html>

@@ -33,30 +33,34 @@ class VeterinariaModel {
         return $ini . '-' . $date . '-' . str_pad($id, 4, '0', STR_PAD_LEFT);
     }
 
-    public function getAll(): array {
-        $result = $this->db->query(
-            'SELECT * FROM veterinarias WHERE activo = 1 ORDER BY id ASC'
+    public function getAll(int $cuenta_id): array {
+        $stmt = $this->db->prepare(
+            'SELECT * FROM veterinarias WHERE activo = 1 AND cuenta_id = ? ORDER BY id ASC'
         );
+        $stmt->bind_param('i', $cuenta_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function findById(int $id): ?array {
-        $stmt = $this->db->prepare('SELECT * FROM veterinarias WHERE id = ? AND activo = 1');
-        $stmt->bind_param('i', $id);
+    public function findById(int $id, int $cuenta_id): ?array {
+        $stmt = $this->db->prepare('SELECT * FROM veterinarias WHERE id = ? AND cuenta_id = ? AND activo = 1');
+        $stmt->bind_param('ii', $id, $cuenta_id);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         return $row ?: null;
     }
 
-    public function crear(array $d): int {
+    public function crear(array $d, int $cuenta_id): int {
         $stmt = $this->db->prepare(
-            'INSERT INTO veterinarias (nombre, ruc, telefono, email, direccion, horario, sitio_web)
-             VALUES (?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO veterinarias (nombre, ruc, telefono, email, direccion, horario, sitio_web, cuenta_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        $stmt->bind_param('sssssss',
+        $stmt->bind_param('sssssssi',
             $d['nombre'], $d['ruc'], $d['telefono'],
-            $d['email'],  $d['direccion'], $d['horario'], $d['sitio_web']
+            $d['email'],  $d['direccion'], $d['horario'], $d['sitio_web'], $cuenta_id
         );
         $stmt->execute();
         $id = (int)$this->db->insert_id;
@@ -64,14 +68,14 @@ class VeterinariaModel {
         return $id;
     }
 
-    public function actualizar(int $id, array $d): bool {
+    public function actualizar(int $id, array $d, int $cuenta_id): bool {
         $stmt = $this->db->prepare(
             'UPDATE veterinarias SET nombre=?, ruc=?, telefono=?, email=?, direccion=?, horario=?, sitio_web=?
-             WHERE id=?'
+             WHERE id=? AND cuenta_id=?'
         );
-        $stmt->bind_param('sssssssi',
+        $stmt->bind_param('sssssssii',
             $d['nombre'], $d['ruc'], $d['telefono'],
-            $d['email'],  $d['direccion'], $d['horario'], $d['sitio_web'], $id
+            $d['email'],  $d['direccion'], $d['horario'], $d['sitio_web'], $id, $cuenta_id
         );
         $ok = $stmt->execute();
         $stmt->close();
@@ -93,10 +97,10 @@ class VeterinariaModel {
         return false;
     }
 
-    public function eliminar(int $id): bool {
+    public function eliminar(int $id, int $cuenta_id): bool {
         if ($this->tieneDatos($id)) return false;
-        $stmt = $this->db->prepare('UPDATE veterinarias SET activo=0 WHERE id=?');
-        $stmt->bind_param('i', $id);
+        $stmt = $this->db->prepare('UPDATE veterinarias SET activo=0 WHERE id=? AND cuenta_id=?');
+        $stmt->bind_param('ii', $id, $cuenta_id);
         $ok = $stmt->execute();
         $stmt->close();
         return $ok;

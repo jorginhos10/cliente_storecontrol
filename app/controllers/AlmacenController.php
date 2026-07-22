@@ -16,7 +16,8 @@ class AlmacenController {
     }
 
     public function index(): void {
-        $veterinarias   = $this->vetModel->getAll();
+        $cuenta_id      = (int)($_SESSION['cuenta_id'] ?? 0);
+        $veterinarias   = $this->vetModel->getAll($cuenta_id);
         $veterinaria_id = (int)($_SESSION['veterinaria_id'] ?? 0);
         if ($veterinaria_id === 0 && !empty($veterinarias)) {
             $veterinaria_id = (int)$veterinarias[0]['id'];
@@ -27,9 +28,9 @@ class AlmacenController {
             'activePage'     => 'almacen',
             'veterinarias'   => $veterinarias,
             'veterinaria_id' => $veterinaria_id,
-            'productos'      => $this->model->getAll($veterinaria_id),
-            'totales'        => $this->model->getTotales($veterinaria_id),
-            'categorias'     => $this->model->getCategorias($veterinaria_id),
+            'productos'      => $this->model->getAll($cuenta_id, $veterinaria_id),
+            'totales'        => $this->model->getTotales($cuenta_id, $veterinaria_id),
+            'categorias'     => $this->model->getCategorias($cuenta_id),
             'usuario'    => [
                 'nombre' => $_SESSION['usuario_nombre'],
                 'email'  => $_SESSION['usuario_email'],
@@ -55,7 +56,8 @@ class AlmacenController {
             $this->redirect('almacen');
         }
 
-        $id = (int)($_GET['id'] ?? 0);
+        $id        = (int)($_GET['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
 
         $imagen = $this->procesarImagen($_FILES['imagen'] ?? null);
         if ($imagen === false) {
@@ -64,14 +66,14 @@ class AlmacenController {
         }
 
         if ($id > 0) {
-            $datos['imagen'] = $imagen ?? ($this->model->findById($id)['imagen'] ?? null);
-            $ok = $this->model->actualizar($id, $datos);
+            $datos['imagen'] = $imagen ?? ($this->model->findById($id, $cuenta_id)['imagen'] ?? null);
+            $ok = $this->model->actualizar($id, $datos, $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Producto actualizado correctamente.'
                 : 'Error al actualizar el producto.';
         } else {
             $datos['imagen'] = $imagen;
-            $ok = $this->model->crear($datos);
+            $ok = $this->model->crear($datos, $cuenta_id);
             $_SESSION[$ok ? 'flash_success' : 'flash_error'] = $ok
                 ? 'Producto agregado correctamente.'
                 : 'Error al guardar el producto.';
@@ -110,10 +112,11 @@ class AlmacenController {
 
         $origen_id  = (int)($_SESSION['veterinaria_id'] ?? 0);
         $destino_id = (int)($_POST['destino_id'] ?? 0);
+        $cuenta_id  = (int)($_SESSION['cuenta_id'] ?? 0);
         $ids        = $_POST['producto_id']  ?? [];
         $cantidades = $_POST['cantidad']      ?? [];
 
-        if ($destino_id <= 0 || $destino_id === $origen_id) {
+        if ($destino_id <= 0 || $destino_id === $origen_id || !$this->vetModel->findById($destino_id, $cuenta_id)) {
             $_SESSION['flash_error'] = 'Selecciona una sucursal destino diferente.';
             $this->redirect('almacen');
         }
@@ -144,9 +147,10 @@ class AlmacenController {
     }
 
     public function toggle(): void {
-        $id = (int)($_GET['id'] ?? 0);
+        $id        = (int)($_GET['id'] ?? 0);
+        $cuenta_id = (int)($_SESSION['cuenta_id'] ?? 0);
         if ($id > 0) {
-            $this->model->toggleActivo($id);
+            $this->model->toggleActivo($id, $cuenta_id);
         }
         $this->redirect('almacen');
     }
@@ -174,7 +178,7 @@ class AlmacenController {
         } elseif ($datos['precio_venta'] <= 0) {
             $datos['error'] = 'El precio de venta debe ser mayor a 0.';
         } elseif ($datos['codigo_barras'] !== null
-                  && $this->model->existeCodigoBarras($datos['codigo_barras'], (int)($_GET['id'] ?? 0))) {
+                  && $this->model->existeCodigoBarras($datos['codigo_barras'], (int)($_SESSION['cuenta_id'] ?? 0), (int)($_GET['id'] ?? 0))) {
             $datos['error'] = 'Ese código de barra ya está asignado a otro producto.';
         }
 

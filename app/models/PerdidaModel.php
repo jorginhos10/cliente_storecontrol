@@ -123,12 +123,16 @@ class PerdidaModel {
         return $row ?? [];
     }
 
-    public function getVeterinarias(): array {
-        $result = $this->db->query('SELECT id, nombre FROM veterinarias WHERE activo = 1 ORDER BY nombre ASC');
+    public function getVeterinarias(int $cuenta_id): array {
+        $stmt = $this->db->prepare('SELECT id, nombre FROM veterinarias WHERE activo = 1 AND cuenta_id = ? ORDER BY nombre ASC');
+        $stmt->bind_param('i', $cuenta_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
-    public function getProductos(int $veterinaria_id = 0): array {
+    public function getProductos(int $cuenta_id, int $veterinaria_id = 0): array {
         if ($veterinaria_id > 0) {
             $stmt = $this->db->prepare(
                 'SELECT p.id, p.nombre, p.codigo, p.unidad, p.precio_venta,
@@ -136,18 +140,19 @@ class PerdidaModel {
                  FROM productos p
                  LEFT JOIN inventario inv ON inv.producto_id = p.id
                      AND inv.veterinaria_id = ?
-                 WHERE p.activo = 1
+                 WHERE p.activo = 1 AND p.cuenta_id = ?
                  ORDER BY p.nombre ASC'
             );
-            $stmt->bind_param('i', $veterinaria_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $stmt->close();
+            $stmt->bind_param('ii', $veterinaria_id, $cuenta_id);
         } else {
-            $result = $this->db->query(
-                'SELECT id, nombre, codigo, unidad, precio_venta, stock FROM productos WHERE activo = 1 ORDER BY nombre ASC'
+            $stmt = $this->db->prepare(
+                'SELECT id, nombre, codigo, unidad, precio_venta, stock FROM productos WHERE activo = 1 AND cuenta_id = ? ORDER BY nombre ASC'
             );
+            $stmt->bind_param('i', $cuenta_id);
         }
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
