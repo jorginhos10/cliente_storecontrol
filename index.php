@@ -70,6 +70,26 @@ switch ($uri) {
         (new ClienteController())->index();
         break;
 
+    case 'deudas':
+        require_once ROOT . '/app/controllers/DeudaController.php';
+        (new DeudaController())->index();
+        break;
+
+    case 'deudas/registrar':
+        require_once ROOT . '/app/controllers/DeudaController.php';
+        (new DeudaController())->registrar();
+        break;
+
+    case 'deudas/pagar':
+        require_once ROOT . '/app/controllers/DeudaController.php';
+        (new DeudaController())->pagar();
+        break;
+
+    case 'deudas/eliminar':
+        require_once ROOT . '/app/controllers/DeudaController.php';
+        (new DeudaController())->eliminar();
+        break;
+
     case 'clientes/guardar':
         require_once ROOT . '/app/controllers/ClienteController.php';
         (new ClienteController())->guardar();

@@ -41,6 +41,13 @@ $veterinaria_id = $veterinaria_id ?? 0;
                 </a>
             </li>
 
+            <li class="<?= $activePage === 'deudas' ? 'active' : '' ?>">
+                <a href="<?= BASE_URL ?>/deudas">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Deudas</span>
+                </a>
+            </li>
+
             <li class="nav-section-label">Inventario</li>
 
             <li class="<?= $activePage === 'almacen' ? 'active' : '' ?>">
