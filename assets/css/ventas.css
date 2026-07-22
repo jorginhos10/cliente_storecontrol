@@ -107,10 +107,36 @@
 
 .pos-card-pulsar { animation: pulsar .25s ease; }
 
+/* Botón "ver foto" */
+.pos-card-ver-foto {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    color: #64748b;
+    font-size: .75rem;
+    padding: 0;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.pos-card-ver-foto:hover {
+    background: #eef2ff;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+}
+
 /* Badge de cantidad en carrito */
 .pos-card-badge {
     position: absolute;
-    top: 8px;
+    top: 34px;
     right: 8px;
     background: #16a34a;
     color: #fff;

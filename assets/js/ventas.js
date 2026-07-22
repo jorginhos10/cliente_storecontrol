@@ -191,7 +191,7 @@ function pulsar(card) {
     setTimeout(() => card.classList.remove('pos-card-pulsar'), 300);
 }
 
-// ── FOTO DEL PRODUCTO (doble clic en la tarjeta) ──────
+// ── FOTO DEL PRODUCTO (botón del ojito en la tarjeta) ─
 
 function verFotoProducto(card) {
     const nombre = card.dataset.nombre;

@@ -107,8 +107,12 @@
                          data-unidad="<?= htmlspecialchars($p['unidad']) ?>"
                          data-categoria="<?= htmlspecialchars($p['categoria'] ?? '') ?>"
                          data-imagen="<?= htmlspecialchars($p['imagen'] ?? '') ?>"
-                         onclick="<?= $sinStock ? '' : 'agregarAlCarrito(this)' ?>"
-                         ondblclick="verFotoProducto(this)">
+                         onclick="<?= $sinStock ? '' : 'agregarAlCarrito(this)' ?>">
+
+                        <button type="button" class="pos-card-ver-foto" title="Ver foto"
+                                onclick="event.stopPropagation(); verFotoProducto(this.closest('.pos-card'))">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
 
                         <div class="pos-card-stock <?= $sinStock ? 'sin-stock' : 'con-stock' ?>">
                             <?= $sinStock ? 'Sin stock' : $p['stock'] . ' ' . htmlspecialchars($p['unidad']) ?>
