@@ -106,7 +106,9 @@
                          data-stock="<?= $p['stock'] ?>"
                          data-unidad="<?= htmlspecialchars($p['unidad']) ?>"
                          data-categoria="<?= htmlspecialchars($p['categoria'] ?? '') ?>"
-                         onclick="<?= $sinStock ? '' : 'agregarAlCarrito(this)' ?>">
+                         data-imagen="<?= htmlspecialchars($p['imagen'] ?? '') ?>"
+                         onclick="<?= $sinStock ? '' : 'agregarAlCarrito(this)' ?>"
+                         ondblclick="verFotoProducto(this)">
 
                         <div class="pos-card-stock <?= $sinStock ? 'sin-stock' : 'con-stock' ?>">
                             <?= $sinStock ? 'Sin stock' : $p['stock'] . ' ' . htmlspecialchars($p['unidad']) ?>
@@ -303,6 +305,19 @@
             <div class="modal-footer border-0">
                 <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── MODAL FOTO DEL PRODUCTO (doble clic en la tarjeta) ── -->
+<div class="modal fade" id="modalFotoProducto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="fotoProductoNombre"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center pt-2 pb-4" id="fotoProductoBody"></div>
         </div>
     </div>
 </div>
