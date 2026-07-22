@@ -40,9 +40,9 @@ function agregarLinea() {
             <label class="linea-lbl d-md-none">P. Unitario</label>
             <div class="input-group input-group-sm">
                 <span class="input-group-text px-2">$</span>
-                <input type="number" class="form-control" name="precio_unitario[]"
+                <input type="number" class="form-control bg-light" name="precio_unitario[]"
                        id="precio-${idx}" step="0.01" min="0" value="0.00"
-                       oninput="recalcularLinea(${idx})">
+                       readonly title="Se completa automáticamente desde el precio de venta del producto">
             </div>
         </div>
         <div class="linea-col linea-col-sub">
