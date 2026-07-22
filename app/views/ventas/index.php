@@ -113,7 +113,11 @@
                         </div>
 
                         <div class="pos-card-icono">
+                            <?php if (!empty($p['imagen'])): ?>
+                            <img src="<?= BASE_URL ?>/assets/img/productos/<?= htmlspecialchars($p['imagen']) ?>" alt="">
+                            <?php else: ?>
                             <i class="bi bi-box-seam-fill"></i>
+                            <?php endif; ?>
                         </div>
 
                         <div class="pos-card-nombre"><?= htmlspecialchars($p['nombre']) ?></div>

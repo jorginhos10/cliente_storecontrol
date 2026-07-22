@@ -143,6 +143,13 @@
     margin: .6rem 0 .4rem;
 }
 
+.pos-card-icono img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: .5rem;
+}
+
 .pos-card-en-carrito .pos-card-icono { color: #16a34a; }
 
 .pos-card-nombre {

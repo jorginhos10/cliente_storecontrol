@@ -287,7 +287,7 @@ class VentaModel {
     public function getProductos(int $cuenta_id, int $veterinaria_id = 0): array {
         if ($veterinaria_id > 0) {
             $stmt = $this->db->prepare(
-                'SELECT p.id, p.nombre, p.codigo, p.codigo_barras, p.unidad, p.precio_venta, c.nombre AS categoria,
+                'SELECT p.id, p.nombre, p.codigo, p.codigo_barras, p.unidad, p.precio_venta, p.imagen, c.nombre AS categoria,
                         COALESCE(inv.stock, 0) AS stock
                  FROM productos p
                  LEFT JOIN categorias c ON c.id = p.categoria_id
@@ -299,7 +299,7 @@ class VentaModel {
             $stmt->bind_param('ii', $veterinaria_id, $cuenta_id);
         } else {
             $stmt = $this->db->prepare(
-                'SELECT p.id, p.nombre, p.codigo, p.codigo_barras, p.unidad, p.precio_venta, c.nombre AS categoria, p.stock
+                'SELECT p.id, p.nombre, p.codigo, p.codigo_barras, p.unidad, p.precio_venta, p.imagen, c.nombre AS categoria, p.stock
                  FROM productos p
                  LEFT JOIN categorias c ON c.id = p.categoria_id
                  WHERE p.activo = 1 AND p.cuenta_id = ? ORDER BY p.nombre ASC'
