@@ -118,10 +118,10 @@
 /* Botón "ver foto" */
 .pos-card-ver-foto {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 24px;
-    height: 24px;
+    top: 4px;
+    right: 4px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -129,10 +129,20 @@
     border: 1px solid #e2e8f0;
     border-radius: 50%;
     color: #64748b;
-    font-size: .75rem;
+    font-size: .85rem;
     padding: 0;
-    z-index: 2;
+    z-index: 5;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Zona de toque invisible más grande (mínimo 44x44 recomendado en táctil,
+   sin agrandar el círculo visual) — evita que en iPad el toque caiga en la tarjeta. */
+.pos-card-ver-foto::before {
+    content: '';
+    position: absolute;
+    inset: -9px;
 }
 
 .pos-card-ver-foto:hover {
