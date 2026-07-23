@@ -79,6 +79,14 @@
     text-align: center;
     position: relative;
     user-select: none;
+    -webkit-touch-callout: none; /* evita el menú nativo de iOS al mantener presionada la foto */
+}
+
+.pos-card img,
+.pos-card-icono img {
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    pointer-events: none; /* el clic siempre lo recibe la tarjeta o el botón del ojito, nunca la imagen */
 }
 
 .pos-card:hover:not(.pos-card-sin-stock) {
