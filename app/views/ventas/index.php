@@ -313,16 +313,16 @@
     </div>
 </div>
 
-<!-- ── MODAL FOTO DEL PRODUCTO (doble clic en la tarjeta) ── -->
-<div class="modal fade" id="modalFotoProducto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold" id="fotoProductoNombre"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center pt-2 pb-4" id="fotoProductoBody"></div>
-        </div>
+<!-- ── POPUP FOTO DEL PRODUCTO (botón del ojito) ──────
+     Overlay propio (no usa el Modal de Bootstrap) para evitar problemas de
+     compatibilidad en iPad/Safari. -->
+<div class="foto-overlay" id="fotoOverlay" onclick="cerrarFotoProducto(event)">
+    <div class="foto-overlay-box" onclick="event.stopPropagation()">
+        <button type="button" class="foto-overlay-cerrar" onclick="cerrarFotoProducto(event)">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <h6 class="fw-bold mb-3" id="fotoProductoNombre"></h6>
+        <div id="fotoProductoBody"></div>
     </div>
 </div>
 

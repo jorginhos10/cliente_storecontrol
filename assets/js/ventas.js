@@ -200,13 +200,18 @@ function verFotoProducto(card) {
     document.getElementById('fotoProductoNombre').textContent = nombre;
     document.getElementById('fotoProductoBody').innerHTML = imagen
         ? `<img src="${BASE_URL}/assets/img/productos/${imagen}" alt="${nombre}"
-                style="max-width:100%; max-height:70vh; border-radius:.5rem;">`
+                style="max-width:100%; max-height:65vh; border-radius:.5rem;">`
         : `<div class="text-muted py-5">
                <i class="bi bi-image fs-1 d-block mb-2 opacity-25"></i>
                Este producto no tiene foto cargada.
            </div>`;
 
-    new bootstrap.Modal(document.getElementById('modalFotoProducto')).show();
+    document.getElementById('fotoOverlay').classList.add('show');
+}
+
+function cerrarFotoProducto(e) {
+    e?.stopPropagation();
+    document.getElementById('fotoOverlay').classList.remove('show');
 }
 
 // ── CONFIRMAR VENTA ───────────────────────────────────
